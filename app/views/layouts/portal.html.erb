@@ -65,9 +65,7 @@ By default, it renders:
           <%= render "public/api/v1/portals/header", portal: @portal %>
         <% end %>
         <%= yield %>
-        <% if !(@is_plain_layout_enabled || @portal.account.feature_enabled?('disable_branding')) %>
-          <%= render "public/api/v1/portals/footer" %>
-        <% end %>
+        <%# White-label fork: footer branding stays hidden on public portal pages %>
       </main>
     </div>
     <% if @article.present? %>

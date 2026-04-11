@@ -35,6 +35,7 @@ Defina:
 - `RAILS_ENV=production`
 - `FRONTEND_URL=https://seu-dominio`
 - `SECRET_KEY_BASE=...`
+- `DISABLE_ENTERPRISE=true` para um fork community/white-label sem módulos enterprise
 - `POSTGRES_PASSWORD=...`
 - `REDIS_PASSWORD=...`
 - chaves `ACTIVE_RECORD_ENCRYPTION_*` se for usar MFA/2FA
