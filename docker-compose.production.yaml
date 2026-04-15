@@ -1,20 +1,21 @@
-version: '3'
+version: '3.8'
+
+# Campo de extensão para evitar que o Docker tente rodar um container 'base'
+x-chatwoot-base: &base
+  build:
+    context: .
+    dockerfile: ./docker/Dockerfile
+    args:
+      BUNDLE_WITHOUT: 'development:test'
+      RAILS_ENV: 'production'
+      RAILS_SERVE_STATIC_FILES: 'true'
+  image: ${CHATWOOT_IMAGE_NAME:-rafarodrix/chatwoot:local}
+  env_file: .env 
+  restart: always
+  networks:
+    - dokploy-network
 
 services:
-  base: &base
-    build:
-      context: .
-      dockerfile: ./docker/Dockerfile
-      args:
-        BUNDLE_WITHOUT: 'development:test'
-        RAILS_ENV: 'production'
-        RAILS_SERVE_STATIC_FILES: 'true'
-    image: ${CHATWOOT_IMAGE_NAME:-rafarodrix/chatwoot:local}
-    env_file: .env 
-    restart: always
-    networks:
-      - dokploy-network
-
   rails:
     <<: *base
     ports:
