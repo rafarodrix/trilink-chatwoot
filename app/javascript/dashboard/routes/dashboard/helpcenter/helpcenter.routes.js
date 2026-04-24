@@ -107,6 +107,10 @@ export default {
     {
       path: getPortalRoute(),
       component: HelpCenterPageRouteView,
+      beforeEnter: to => ({
+        name: 'home',
+        params: { accountId: to.params.accountId },
+      }),
       redirect: to => {
         return {
           name: 'portals_index',

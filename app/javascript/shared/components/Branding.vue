@@ -1,9 +1,8 @@
 <script>
-import { useBranding } from 'shared/composables/useBranding';
-
 const {
   LOGO_THUMBNAIL: logoThumbnail,
   BRAND_NAME: brandName,
+  INSTALLATION_NAME: installationName,
   WIDGET_BRAND_URL: widgetBrandURL,
 } = window.globalConfig || {};
 
@@ -14,16 +13,11 @@ export default {
       default: false,
     },
   },
-  setup() {
-    const { replaceInstallationName } = useBranding();
-    return {
-      replaceInstallationName,
-    };
-  },
   data() {
     return {
       globalConfig: {
         brandName,
+        installationName,
         logoThumbnail,
         widgetBrandURL,
       },
@@ -53,7 +47,7 @@ export default {
 
 <template>
   <div
-    v-if="globalConfig.brandName && !disableBranding"
+    v-if="(globalConfig.installationName || globalConfig.brandName) && !disableBranding"
     class="px-0 py-3 flex justify-center"
   >
     <a
@@ -68,7 +62,7 @@ export default {
         :src="globalConfig.logoThumbnail"
       />
       <span>
-        {{ replaceInstallationName($t('POWERED_BY')) }}
+        {{ globalConfig.installationName || globalConfig.brandName }}
       </span>
     </a>
   </div>

@@ -1,6 +1,7 @@
 class Public::Api::V1::Portals::BaseController < PublicController
   include SwitchLocale
 
+  before_action :render_help_center_hidden
   before_action :show_plain_layout
   before_action :set_color_scheme
   before_action :set_global_config
@@ -8,6 +9,10 @@ class Public::Api::V1::Portals::BaseController < PublicController
   after_action :allow_iframe_requests
 
   private
+
+  def render_help_center_hidden
+    render file: Rails.public_path.join('404.html'), status: :not_found, layout: false
+  end
 
   def show_plain_layout
     @is_plain_layout_enabled = params[:show_plain_layout] == 'true'
