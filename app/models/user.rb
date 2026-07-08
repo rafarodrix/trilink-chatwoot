@@ -217,8 +217,16 @@ class User < ApplicationRecord
   private
 
   def sync_user_sessions
+    return unless session_tracking_available?
+
     active_client_ids = (tokens || {}).keys
     user_sessions.where.not(client_id: active_client_ids).destroy_all
+  end
+
+  def session_tracking_available?
+    UserSession.table_exists?
+  rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid
+    false
   end
 
   def remove_macros

@@ -286,5 +286,15 @@ RSpec.describe User do
 
       expect { user_with_tokens.save! }.to change(user_with_tokens.user_sessions, :count).by(-2)
     end
+
+    it 'skips session sync when the user_sessions table is unavailable' do
+      allow(UserSession).to receive(:table_exists?).and_raise(
+        ActiveRecord::StatementInvalid.new('PG::UndefinedTable')
+      )
+
+      user_with_tokens.tokens = user_with_tokens.tokens.except('client-a')
+
+      expect { user_with_tokens.save! }.not_to raise_error
+    end
   end
 end
