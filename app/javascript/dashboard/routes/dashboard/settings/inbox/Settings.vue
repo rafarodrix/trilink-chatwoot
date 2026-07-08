@@ -834,23 +834,6 @@ export default {
             </SettingsFieldSection>
 
             <SettingsFieldSection
-<<<<<<< HEAD
-=======
-              :label="$t('INBOX_MGMT.HELP_CENTER.LABEL')"
-              :help-text="$t('INBOX_MGMT.HELP_CENTER.SUB_TEXT')"
-            >
-              <SelectInput
-                v-model="selectedPortalSlug"
-                :placeholder="$t('INBOX_MGMT.HELP_CENTER.PLACEHOLDER')"
-                :options="[
-                  { value: '', label: $t('INBOX_MGMT.HELP_CENTER.NONE') },
-                  ...portals.map(p => ({ value: p.slug, label: p.name })),
-                ]"
-              />
-            </SettingsFieldSection>
-
-            <SettingsFieldSection
->>>>>>> b9536fb8ed4756e461ab87e12c0bce8fac22ae2a
               v-if="canLocktoSingleConversation"
               :label="
                 $t('INBOX_MGMT.SETTINGS_POPUP.LOCK_TO_SINGLE_CONVERSATION')
