@@ -38,4 +38,25 @@ module SafeFetch
   def self.allow_private_network?
     ActiveModel::Type::Boolean.new.cast(ENV.fetch('SAFE_FETCH_ALLOW_PRIVATE_NETWORK', false))
   end
+
+  def self.allow_private_network_for?(url)
+    allow_private_network? || private_host_allowed?(url)
+  end
+
+  def self.private_host_allowed?(url)
+    uri = URI.parse(url)
+    host = uri.host.to_s.downcase
+    return false if host.blank?
+
+    allowed_private_hosts.include?(host) || allowed_private_hosts.include?("#{host}:#{uri.port}")
+  rescue URI::InvalidURIError
+    false
+  end
+
+  def self.allowed_private_hosts
+    ENV.fetch('SAFE_FETCH_PRIVATE_HOSTS', '')
+       .split(',')
+       .map { |host| host.strip.downcase }
+       .reject(&:blank?)
+  end
 end

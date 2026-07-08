@@ -234,6 +234,36 @@ RSpec.describe SafeFetch do
         end
       end
 
+      it 'allows allowlisted private hostnames without enabling all private network access' do
+        private_url = 'http://internal-webhook-service/image.png'
+        allow(Resolv).to receive(:getaddresses).with('internal-webhook-service').and_return(['10.0.0.5'])
+        stub_request(:get, private_url).to_return(
+          status: 200,
+          body: File.new(Rails.root.join('spec/assets/avatar.png')),
+          headers: { 'Content-Type' => 'image/png' }
+        )
+
+        with_modified_env('SAFE_FETCH_ALLOW_PRIVATE_NETWORK' => 'false',
+                          'SAFE_FETCH_PRIVATE_HOSTS' => 'internal-webhook-service') do
+          expect { described_class.fetch(private_url) { nil } }.not_to raise_error
+        end
+      end
+
+      it 'allows allowlisted private hosts by host:port' do
+        private_url = 'http://internal-webhook-service:8080/image.png'
+        allow(Resolv).to receive(:getaddresses).with('internal-webhook-service').and_return(['10.0.0.5'])
+        stub_request(:get, private_url).to_return(
+          status: 200,
+          body: File.new(Rails.root.join('spec/assets/avatar.png')),
+          headers: { 'Content-Type' => 'image/png' }
+        )
+
+        with_modified_env('SAFE_FETCH_ALLOW_PRIVATE_NETWORK' => 'false',
+                          'SAFE_FETCH_PRIVATE_HOSTS' => 'internal-webhook-service:8080') do
+          expect { described_class.fetch(private_url) { nil } }.not_to raise_error
+        end
+      end
+
       it 'allows redirects to private hostnames when private network access is enabled' do
         redirect_url = 'http://example.com/redirect.png'
         private_url = 'http://private.example.com/image.png'
