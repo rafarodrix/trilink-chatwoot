@@ -156,7 +156,7 @@ class DeviseOverrides::SessionsController < DeviseTokenAuth::SessionsController
 
     # Picker only when every token has a tracked session; partial tracking would
     # show a misleading count, so fall through to silent eviction instead.
-    if browser_request? && user.user_sessions.count >= user.tokens.size
+    if browser_request? && session_tracking_available? && user.user_sessions.count >= user.tokens.size
       handle_sessions_limit_for_login(user)
       true
     else
@@ -177,8 +177,10 @@ class DeviseOverrides::SessionsController < DeviseTokenAuth::SessionsController
     if params[:revoke_all_sessions].present?
       user.tokens = {}
       user.save!
-      user.user_sessions.destroy_all
+      user.user_sessions.destroy_all if session_tracking_available?
     elsif params[:revoke_session_id].present?
+      return unless session_tracking_available?
+
       session = user.user_sessions.find_by(id: params[:revoke_session_id])
       return unless session
 
@@ -189,6 +191,8 @@ class DeviseOverrides::SessionsController < DeviseTokenAuth::SessionsController
   end
 
   def evict_oldest_session(user)
+    return evict_oldest_token(user) unless session_tracking_available?
+
     # Drop pre-rollout untracked tokens first so freshly tracked logins aren't evicted.
     return evict_oldest_token(user) if user.user_sessions.count < user.tokens.size
 
@@ -222,6 +226,7 @@ class DeviseOverrides::SessionsController < DeviseTokenAuth::SessionsController
   def track_user_session
     client_id = @token&.try(:client) || response.headers['client']
     return unless client_id.present? && @resource.present?
+    return unless session_tracking_available?
 
     UserSessionTrackingService.new(
       user: @resource,
@@ -230,6 +235,12 @@ class DeviseOverrides::SessionsController < DeviseTokenAuth::SessionsController
     ).create_or_update!
   rescue StandardError => e
     Rails.logger.warn "Session tracking failed: #{e.message}"
+  end
+
+  def session_tracking_available?
+    UserSession.table_exists?
+  rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid
+    false
   end
 end
 
