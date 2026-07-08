@@ -21,6 +21,8 @@ import PreChatFormSettings from './PreChatForm/Settings.vue';
 import WeeklyAvailability from './components/WeeklyAvailability.vue';
 import GreetingsEditor from 'shared/components/GreetingsEditor.vue';
 import ConfigurationPage from './settingsPage/ConfigurationPage.vue';
+import VoiceConfigurationPage from './settingsPage/VoiceConfigurationPage.vue';
+import WhatsappCallingPage from './settingsPage/WhatsappCallingPage.vue';
 import CustomerSatisfactionPage from './settingsPage/CustomerSatisfactionPage.vue';
 import CollaboratorsPage from './settingsPage/CollaboratorsPage.vue';
 import BotConfiguration from './components/BotConfiguration.vue';
@@ -45,6 +47,8 @@ export default {
     BotConfiguration,
     CollaboratorsPage,
     ConfigurationPage,
+    VoiceConfigurationPage,
+    WhatsappCallingPage,
     CustomerSatisfactionPage,
     FacebookReauthorize,
     GreetingsEditor,
@@ -165,19 +169,17 @@ export default {
         },
       ];
 
-      if (!this.isAVoiceChannel) {
-        visibleToAllChannelTabs = [
-          ...visibleToAllChannelTabs,
-          {
-            key: 'business-hours',
-            name: this.$t('INBOX_MGMT.TABS.BUSINESS_HOURS'),
-          },
-          {
-            key: 'csat',
-            name: this.$t('INBOX_MGMT.TABS.CSAT'),
-          },
-        ];
-      }
+      visibleToAllChannelTabs = [
+        ...visibleToAllChannelTabs,
+        {
+          key: 'business-hours',
+          name: this.$t('INBOX_MGMT.TABS.BUSINESS_HOURS'),
+        },
+        {
+          key: 'csat',
+          name: this.$t('INBOX_MGMT.TABS.CSAT'),
+        },
+      ];
 
       if (this.isAWebWidgetInbox) {
         visibleToAllChannelTabs = [
@@ -193,7 +195,6 @@ export default {
         this.isATwilioChannel ||
         this.isALineChannel ||
         this.isAPIInbox ||
-        this.isAVoiceChannel ||
         (this.isAnEmailChannel && !this.inbox.provider) ||
         this.shouldShowWhatsAppConfiguration ||
         this.isAWebWidgetInbox
@@ -224,6 +225,40 @@ export default {
           {
             key: 'whatsapp-health',
             name: this.$t('INBOX_MGMT.TABS.ACCOUNT_HEALTH'),
+          },
+        ];
+      }
+
+      if (
+        this.isATwilioChannel &&
+        this.inbox.phone_number &&
+        this.inbox.medium === 'sms' &&
+        this.isFeatureEnabledonAccount(
+          this.accountId,
+          FEATURE_FLAGS.CHANNEL_VOICE
+        )
+      ) {
+        visibleToAllChannelTabs = [
+          ...visibleToAllChannelTabs,
+          {
+            key: 'voice-configuration',
+            name: this.$t('INBOX_MGMT.TABS.VOICE'),
+          },
+        ];
+      }
+
+      if (
+        this.isAWhatsAppCloudChannel &&
+        this.isFeatureEnabledonAccount(
+          this.accountId,
+          FEATURE_FLAGS.CHANNEL_VOICE
+        )
+      ) {
+        visibleToAllChannelTabs = [
+          ...visibleToAllChannelTabs,
+          {
+            key: 'calls-configuration',
+            name: this.$t('INBOX_MGMT.TABS.CALLS'),
           },
         ];
       }
@@ -799,6 +834,23 @@ export default {
             </SettingsFieldSection>
 
             <SettingsFieldSection
+<<<<<<< HEAD
+=======
+              :label="$t('INBOX_MGMT.HELP_CENTER.LABEL')"
+              :help-text="$t('INBOX_MGMT.HELP_CENTER.SUB_TEXT')"
+            >
+              <SelectInput
+                v-model="selectedPortalSlug"
+                :placeholder="$t('INBOX_MGMT.HELP_CENTER.PLACEHOLDER')"
+                :options="[
+                  { value: '', label: $t('INBOX_MGMT.HELP_CENTER.NONE') },
+                  ...portals.map(p => ({ value: p.slug, label: p.name })),
+                ]"
+              />
+            </SettingsFieldSection>
+
+            <SettingsFieldSection
+>>>>>>> b9536fb8ed4756e461ab87e12c0bce8fac22ae2a
               v-if="canLocktoSingleConversation"
               :label="
                 $t('INBOX_MGMT.SETTINGS_POPUP.LOCK_TO_SINGLE_CONVERSATION')
@@ -1211,6 +1263,18 @@ export default {
           :class="isAWebWidgetInbox ? 'max-w-7xl' : 'max-w-4xl'"
         >
           <ConfigurationPage :inbox="inbox" />
+        </div>
+        <div
+          v-if="selectedTabKey === 'voice-configuration'"
+          class="mx-6 max-w-4xl"
+        >
+          <VoiceConfigurationPage :inbox="inbox" />
+        </div>
+        <div
+          v-if="selectedTabKey === 'calls-configuration'"
+          class="mx-6 max-w-4xl"
+        >
+          <WhatsappCallingPage :inbox="inbox" />
         </div>
         <div v-if="selectedTabKey === 'csat'">
           <CustomerSatisfactionPage :inbox="inbox" />

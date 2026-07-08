@@ -15,6 +15,7 @@ RSpec.describe Captain::ConversationCompletionService do
     allow(mock_chat).to receive(:with_schema).and_return(mock_chat)
     allow(account).to receive(:feature_enabled?).and_call_original
     allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+    allow(Integrations::Openai::KeyValidator).to receive(:valid?).and_return(true)
   end
 
   describe '#perform' do
@@ -165,9 +166,13 @@ RSpec.describe Captain::ConversationCompletionService do
 
       before do
         allow(ChatwootApp).to receive(:chatwoot_cloud?).and_return(true)
-        allow(account).to receive(:usage_limits).and_return({
-                                                              captain: { responses: { current_available: 0 } }
-                                                            })
+        allow(account).to receive(:usage_limits).and_return(
+          {
+            agents: ChatwootApp.max_limit,
+            inboxes: ChatwootApp.max_limit,
+            captain: { responses: { current_available: 0 } }
+          }
+        )
         create(:message, conversation: conversation, message_type: :incoming, content: 'What are your hours?')
         create(:message, conversation: conversation, message_type: :outgoing, content: 'We are open 9-5 Monday to Friday.')
         allow(mock_chat).to receive(:ask).and_return(mock_response)
