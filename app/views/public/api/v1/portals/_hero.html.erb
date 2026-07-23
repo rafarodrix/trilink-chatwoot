@@ -1,6 +1,13 @@
 <% content_for :head do %>
   <title><%= @portal.display_title(@locale) %></title>
   <meta name="title" content="<%= @portal.display_title(@locale) %>">
+  <% if @portal.localized_value('header_text', @locale).present? %>
+    <meta name="description" content="<%= @portal.localized_value('header_text', @locale) %>">
+    <meta property="og:description" content="<%= @portal.localized_value('header_text', @locale) %>">
+    <meta name="twitter:description" content="<%= @portal.localized_value('header_text', @locale) %>">
+  <% end %>
+  <meta property="og:title" content="<%= @portal.display_title(@locale) %>">
+  <meta name="twitter:title" content="<%= @portal.display_title(@locale) %>">
 
   <% if @og_image_url.present? %>
     <meta name="twitter:card" content="summary_large_image">
