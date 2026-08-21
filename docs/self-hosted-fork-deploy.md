@@ -52,9 +52,26 @@ Variáveis opcionais do compose:
 
 ```bash
 docker compose -f docker-compose.production.yaml build
-docker compose -f docker-compose.production.yaml run --rm rails bundle exec rails db:chatwoot_prepare
 docker compose -f docker-compose.production.yaml up -d
 ```
+
+## Deploy pelo Dokploy: migração antes da aplicação
+
+Use `docker-compose.production.yaml` como o Compose do serviço no Dokploy e mantenha o comando padrão de deploy. Não preencha **Advanced → Command** e não acrescente a migração aos comandos de `rails` ou `sidekiq`.
+
+O Compose declara o serviço `migration`, que executa uma única vez, com a mesma imagem e variáveis da aplicação:
+
+```sh
+RAILS_ENV=production bundle exec rails db:chatwoot_prepare
+```
+
+Os serviços `rails` e `sidekiq` usam `depends_on` com `service_completed_successfully`. Portanto, a cada deploy em que a imagem é recriada, o Dokploy cria e aguarda esse único job; só depois inicia os dois processos. Se a migração falhar, o deploy para antes de liberar a versão nova.
+
+## Rollback
+
+1. No Dokploy, selecione a imagem/commit anterior e execute o redeploy.
+2. Confirme que o job `migration` terminou com sucesso antes de liberar Rails e Sidekiq.
+3. Se a versão nova alterou o schema de forma incompatível ou irreversível, restaure o backup do PostgreSQL feito antes do deploy; não execute `db:rollback` automaticamente.
 
 ## Melhorias recomendadas pela comunidade
 
